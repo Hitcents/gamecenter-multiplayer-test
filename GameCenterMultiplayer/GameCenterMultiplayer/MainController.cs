@@ -38,6 +38,7 @@ namespace GameCenterMultiplayer
             base.ViewDidLoad();
 
             _displayText.Text = string.Empty;
+            _textEntry.Enabled = false;
 
             _textEntry.EditingDidEndOnExit += (object sender, EventArgs e) => 
             {
@@ -71,6 +72,7 @@ namespace GameCenterMultiplayer
 
                 match = e.Match;
                 _createMatch.Enabled = false;
+                _textEntry.Enabled = true;
 
                 match.DataReceived += (obj, args) => 
                 {
@@ -85,6 +87,7 @@ namespace GameCenterMultiplayer
                     popup.Show();
                     _createMatch.Enabled = true;
                     _displayText.Text = string.Empty;
+                    _textEntry.Enabled = false;
                 };
                 match.Failed += (obj, args) => 
                 {
