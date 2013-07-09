@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
+using MonoTouch.GameKit;
 
 namespace GameCenterMultiplayer
 {
@@ -12,6 +13,10 @@ namespace GameCenterMultiplayer
     [Register ("AppDelegate")]
     public partial class AppDelegate : UIApplicationDelegate
     {
+        bool gameCenterAuthenticationComplete = false;
+        string currentPlayerID;
+        MainController viewController;
+
         // class-level declarations
         public override UIWindow Window
         {
@@ -38,6 +43,51 @@ namespace GameCenterMultiplayer
         /// This method is called when the application is about to terminate. Save data, if needed. 
         public override void WillTerminate(UIApplication application)
         {
+        }
+
+        public override void FinishedLaunching(UIApplication application)
+        {
+           viewController = new MainController(Handle);
+
+           if (!isGameCenterAPIAvailable ())
+                gameCenterAuthenticationComplete = false;
+
+            else 
+            {
+                GKLocalPlayer.LocalPlayer.AuthenticateHandler = (ui, error) => 
+                {
+                    if(ui != null)
+                    {
+                        viewController.PresentViewController(ui,true,null);
+                    }
+                    else if(error != null)
+                    {
+                        new UIAlertView ("Error", error.ToString(), null, "OK", null).Show();
+                    }
+                    else if(GKLocalPlayer.LocalPlayer.Authenticated)
+                    {
+                        this.gameCenterAuthenticationComplete = true;
+
+                        //Switching Users
+                        if(currentPlayerID != null || currentPlayerID != GKLocalPlayer.LocalPlayer.PlayerID)
+                        {
+                            currentPlayerID = GKLocalPlayer.LocalPlayer.PlayerID;
+                            viewController.player = new Player();
+                        }
+                    }
+                    else
+                    {
+                        this.gameCenterAuthenticationComplete = false;
+                    }
+
+                };
+            }
+            
+        }
+
+        private bool isGameCenterAPIAvailable()
+        {
+            return UIDevice.CurrentDevice.CheckSystemVersion (4, 1);
         }
     }
 }
